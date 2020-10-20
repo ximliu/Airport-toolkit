@@ -70,10 +70,10 @@ if [[ ${is_auto} != "y" ]]; then
     	exit 0
 	fi
 fi
-echo "Checking if there any exist Shadowsocksr server software..."
+echo "Checking if there is any existing shadowsocksr server installation..."
 if [ -d "/soft/shadowsocks" ]; then
 	while :; do echo
-		echo -n "Detect exist shadowsocks server installation! If you continue this install, all the previous configuration will be lost! Continue?(Y/N)"
+		echo -n "Detect exist shadowsocksr server installation! If you continue this install, all the previous configuration will be lost! Continue?(Y/N)"
 		read is_clean_old
 		if [[ ${is_clean_old} != "y" && ${is_clean_old} != "Y" && ${is_clean_old} != "N" && ${is_clean_old} != "n" ]]; then
 			echo -n "Bad answer! Please only input number Y or N"
@@ -99,7 +99,7 @@ echo "Installing libsodium..."
 dnf install libsodium -y
 mkdir /soft
 echo "Installing Shadowsocksr server from GitHub..."	
-cd /tmp && git clone -b manyuser https://github.com/Anankke/shadowsocks-mod.git
+cd /tmp && git clone -b testing https://github.com/Anankke/shadowsocks-mod.git
 mv shadowsocks-mod shadowsocks
 mv -f shadowsocks /soft
 cd /soft/shadowsocks
@@ -222,12 +222,6 @@ do_service(){
 	echo "Starting SSR Node Service..."
 	systemctl daemon-reload && systemctl enable ssr_node && systemctl start ssr_node
 }
-do_salt_minion(){
-	echo "Installing Salt Minion..."
-	curl -L https://bootstrap.saltstack.com -o install_salt.sh && sudo sh install_salt.sh -P
-	echo "Writing Salt config..."
-	sed -i -e "s/#master: salt/master: ${salt_master_ip}/g" /etc/salt/minion
-}
 while :; do echo
 	echo -n "Do you want to enable BBR feature(using system kernel) and optimizate the system?(Y/N)"
 	read is_bbr
@@ -246,27 +240,11 @@ while :; do echo
 		break
 	fi
 done
-while :; do echo
-	echo -n "Do you want to install Salt Minion?(Y/N)"
-	read is_salt_minion
-	if [[ ${is_salt_minion} != "y" && ${is_salt_minion} != "Y" && ${is_salt_minion} != "N" && ${is_salt_minion} != "n" ]]; then
-		echo -n "Bad answer! Please only input number Y or N"
-	elif [[ ${is_salt_minion} == "y" && ${is_salt_minion} == "Y" ]]; then
-		echo -n "Please enter Salt Master's IP address:"
-		read salt_master_ip
-		break
-	else
-		break
-	fi
-done
 if [[ ${is_bbr} == "y" || ${is_bbr} == "Y" ]]; then
 	do_bbr
 fi
 if [[ ${is_service} == "y" || ${is_service} == "Y" ]]; then
 	do_service
-fi
-if [[ ${is_salt_minion} == "y" || ${is_salt_minion} == "Y" ]]; then
-	do_salt_minion
 fi
 echo "System require a reboot to complete the installation process, press Y to continue, or press any key else to exit this script."
 read is_reboot
